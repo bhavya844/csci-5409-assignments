@@ -15,15 +15,10 @@ def calculate():
     product=data.get('product')
 
     if file is None:
-        return jsonify({"file": "null", "error": "Invalid JSON input."}), 404
+        return jsonify({"file": None, "error": "Invalid JSON input."}), 404
 
     file_path=f"/storage/{file}"
-    # try:
-    #     if not os.path.exists(file_path):
-    #         return jsonify({f"file": {file}, "error": "File not found."})
-    # except FileNotFoundError:
-    #     return jsonify({f"file": {file}, "error": "File not found."}), 404
-        
+    
     try:
         with open(file_path, mode='r') as csvfile:
             sample = csvfile.read(1024)

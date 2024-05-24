@@ -1,5 +1,6 @@
 services:
   container1:
+    # build: ./container1
     image: bhavya1712/container1
     ports:
       - "6000:6000"
@@ -9,6 +10,7 @@ services:
       - .:/storage
 
   container2:
+  #  build: ./container2
    image: bhavya1712/container2 
    ports:
     - "7000:7000"
