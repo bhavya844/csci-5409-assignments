@@ -1,0 +1,47 @@
+# steps:
+#   # Docker Build
+#   - name: 'gcr.io/cloud-builders/docker'
+#     args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY_REPO}/container-1:$SHORT_SHA', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY_REPO}/container-1:latest', '.']
+#   # [END cloudbuild_python_image_yaml]
+
+#   # [START cloudbuild_python_push_yaml]
+#   # Docker push to Google Artifact Registry
+#   - name: 'gcr.io/cloud-builders/docker'
+#     args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY_REPO}/container-1:$SHORT_SHA', 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REGISTRY_REPO}/container-1:latest']
+#   # [END cloudbuild_python_push_yaml]
+
+# substitutions:
+#   _ARTIFACT_REGISTRY_REPO: 'container-1'
+
+
+
+steps:
+# Step 1: Docker Build
+# - Create a docker image from GCP Source Repository
+# - Create 2 tags for the same docker image. Commit ID and Latest.
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', '${_IMAGE_NAME}:$SHORT_SHA', '-t', '${_IMAGE_NAME}:latest', '.']
+
+# Step 2: Docker Push
+# - Push image to GCP Artifact Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '--all-tags', '${_IMAGE_NAME}']
+
+# Step 3: Deploy to GKE cluster
+- name: "gcr.io/cloud-builders/gke-deploy"
+  args:
+  - run
+  - --filename=./kubernetes
+  - --image=${_IMAGE_NAME}:$SHORT_SHA
+  - --location=${_CLUSTER_LOCATION}
+  - --cluster=${_CLUSTER_NAME}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+
+
+substitutions:
+  _IMAGE_NAME: 'us-central1-docker.pkg.dev/kubernetes-428718/container-1/app1'
+  _CLUSTER_LOCATION: 'us-central1-c'
+  _CLUSTER_NAME: 'my-gke-cluster'
