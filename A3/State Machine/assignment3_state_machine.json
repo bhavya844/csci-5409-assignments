@@ -1,0 +1,47 @@
+{
+    "Comment": "A state machine that selects a hashing algorithm based on the action parameter",
+    "StartAt": "SelectHashingAlgorithm",
+    "States": {
+      "SelectHashingAlgorithm": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.action",
+            "StringEquals": "sha256",
+            "Next": "SHA256Hashing"
+          },
+          {
+            "Variable": "$.action",
+            "StringEquals": "md5",
+            "Next": "MD5Hashing"
+          },
+          {
+            "Variable": "$.action",
+            "StringEquals": "bcrypt",
+            "Next": "BcryptHashing"
+          }
+        ],
+        "Default": "UnknownAlgorithm"
+      },
+      "SHA256Hashing": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:970200206506:function:SHA-256",
+        "End": true
+      },
+      "MD5Hashing": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:970200206506:function:mdLambda5",
+        "End": true
+      },
+      "BcryptHashing": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:970200206506:function:Bcrypt",
+        "End": true
+      },
+      "UnknownAlgorithm": {
+        "Type": "Fail",
+        "Error": "UnknownAlgorithm",
+        "Cause": "The provided action is not supported."
+      }
+    }
+  }
