@@ -1,10 +1,10 @@
 import bcryptjs from "bcryptjs";
 import axios from "axios";
 
-// Helper function to generate a salt
-const generateSalt = async (saltRounds) => {
+
+const createSalt = async (rounds) => {
   try {
-    const salt = await bcryptjs.genSalt(saltRounds);
+    const salt = await bcryptjs.genSalt(rounds);
     return salt.replace("$2a$", "$2b$");
   } catch (err) {
     throw new Error("Error generating salt: " + err.message);
@@ -14,46 +14,46 @@ const generateSalt = async (saltRounds) => {
 export const handler = async (event) => {
   console.log("Received event:", JSON.stringify(event));
 
-  // Directly access inputData from the event object
-  const dataToHash = event.value;
-  const action = event.action; // Directly access inputType
+  
+  const valueToHash = event.value;
+  const operation = event.action; 
 
-  if (!dataToHash) {
-    console.error("No data to hash provided");
+  if (!valueToHash) {
+    console.error("No value to hash provided");
     return {
       statusCode: 400,
-      body: JSON.stringify({ message: "No data to hash provided" }),
+      body: JSON.stringify({ message: "No value to hash provided" }),
     };
   }
 
-  // Perform hashing using bcryptjs
-  const saltRounds = 12;
-  const salt = await generateSalt(saltRounds);
-  const hashedData = await bcryptjs.hash(dataToHash, salt);
+  
+  const roundsOfSalt = 12;
+  const salt = await createSalt(roundsOfSalt);
+  const hashedValue = await bcryptjs.hash(valueToHash, salt);
 
-  console.log("Original Data:", dataToHash);
-  console.log("Hashed Data:", hashedData);
+  console.log("Original Value:", valueToHash);
+  console.log("Hashed Value:", hashedValue);
 
-  // Prepare the data to send in the POST request
-  const postData = {
-    banner: "B00982225", // Assuming 'banner' is part of the event
-    result: hashedData,
-    arn: "arn:aws:lambda:us-east-1:970200206506:function:Bcrypt", // Assuming 'arn' is part of the event
+  
+  const postPayload = {
+    banner: "B00982225", 
+    result: hashedValue,
+    arn: "arn:aws:lambda:us-east-1:970200206506:function:Bcrypt", 
     action: event.action || "bcrypt",
-    value: dataToHash,
+    value: valueToHash,
   };
 
-  // Send the POST request to the course_uri
+  
   try {
-    const response = await axios.post(event.course_uri, postData);
+    const response = await axios.post(event.course_uri, postPayload);
     console.log("POST request response:", response.data);
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: `Hello from Lambda! Processed using ${action}`,
-        originalData: dataToHash,
-        hashedData: hashedData,
+        message: `Hello from Lambda! Processed using ${operation}`,
+        originalValue: valueToHash,
+        hashedValue: hashedValue,
         postResponse: response.data,
       }),
     };
